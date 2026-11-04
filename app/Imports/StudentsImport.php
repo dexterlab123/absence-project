@@ -8,6 +8,7 @@ use App\Models\Student;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Carbon\Carbon;
 
 class StudentsImport implements ToCollection, WithHeadingRow
 {
@@ -41,69 +42,122 @@ class StudentsImport implements ToCollection, WithHeadingRow
             $this->summary['total']++;
             $rowNumber = $index + 2; // +2 because heading row is 1, data starts at 2
 
-            $fullName = trim($row['full_name'] ?? '');
-            $studentNumber = trim($row['student_number'] ?? '');
+            $this->processRow($row, $rowNumber);
+        }
+    }
 
-            // Skip rows with no name
-            if (empty($fullName)) {
-                $this->summary['skipped'][] = [
-                    'row' => $rowNumber,
-                    'reason' => 'Missing full_name',
-                ];
-                continue;
+    protected function processRow($row, int $rowNumber): void
+    {
+        $matricule = trim($row['matriculeetudiant'] ?? '');
+        $nom = trim($row['nom'] ?? '');
+        $prenom = trim($row['prenom'] ?? '');
+        $nomArabe = trim($row['nom_arabe'] ?? '');
+        $prenomArabe = trim($row['prenom_arabe'] ?? '');
+        $dateNaissance = trim($row['datenaissance'] ?? '');
+        $lieuNaissance = trim($row['lieunaissance'] ?? '');
+        $cin = trim($row['cin'] ?? '');
+        
+        $phoneRaw = $row['ntelelephone'] ?? '';
+        $phone = '';
+        if ($phoneRaw !== '') {
+            $phone = (string) (int) $phoneRaw;
+        }
+
+        if (empty($nom) || empty($prenom)) {
+            $this->summary['skipped'][] = [
+                'row' => $rowNumber,
+                'reason' => 'Missing Nom/Prenom',
+            ];
+            return;
+        }
+
+        $fullName = trim("{$nom} {$prenom}");
+        $fullNameAr = trim("{$nomArabe} {$prenomArabe}");
+        if ($fullNameAr === '') $fullNameAr = null;
+        
+        $birthDate = null;
+        if (!empty($dateNaissance)) {
+            try {
+                $birthDate = Carbon::createFromFormat('d/m/Y H:i:s', $dateNaissance)->format('Y-m-d');
+            } catch (\Exception $e) {
+                // Ignore if date format is invalid
             }
+        }
 
-            // Find or create student
-            $isNew = false;
-            if (!empty($studentNumber)) {
-                $student = Student::where('student_number', $studentNumber)->first();
-                if ($student) {
-                    // Existing student found by student_number
-                    $isNew = false;
-                } else {
-                    $student = Student::create([
-                        'full_name' => $fullName,
-                        'student_number' => $studentNumber,
-                    ]);
-                    $isNew = true;
+        $student = null;
+        $isNew = false;
+
+        if (!empty($matricule)) {
+            $student = Student::where('student_number', $matricule)->first();
+            if ($student) {
+                $updateData = [];
+                if (empty($student->phone) && !empty($phone)) $updateData['phone'] = $phone;
+                if (empty($student->full_name_ar) && !empty($fullNameAr)) $updateData['full_name_ar'] = $fullNameAr;
+                if (empty($student->birth_date) && !empty($birthDate)) $updateData['birth_date'] = $birthDate;
+                if (empty($student->birth_place) && !empty($lieuNaissance)) $updateData['birth_place'] = $lieuNaissance;
+                if (empty($student->cin) && !empty($cin)) $updateData['cin'] = $cin;
+                
+                if (!empty($updateData)) {
+                    $student->update($updateData);
                 }
-            } else {
-                // No student number — create new
-                $student = Student::create([
-                    'full_name' => $fullName,
-                    'student_number' => null,
-                ]);
-                $isNew = true;
             }
+        }
 
-            // Check if enrollment already exists
-            $existingEnrollment = Enrollment::where([
-                'student_id' => $student->id,
-                'group_id' => $this->groupId,
-                'academic_year_id' => $this->academicYear->id,
-            ])->exists();
-
-            if ($existingEnrollment) {
-                $this->summary['skipped'][] = [
-                    'row' => $rowNumber,
-                    'reason' => "Student \"{$fullName}\" already enrolled in this group",
-                ];
-                continue;
-            }
-
-            // Create enrollment
-            Enrollment::create([
-                'student_id' => $student->id,
-                'group_id' => $this->groupId,
-                'academic_year_id' => $this->academicYear->id,
-                'joined_at' => now()->toDateString(),
+        if (!$student) {
+            $student = Student::create([
+                'student_number' => !empty($matricule) ? $matricule : null,
+                'full_name' => $fullName,
+                'full_name_ar' => $fullNameAr,
+                'birth_date' => $birthDate,
+                'birth_place' => !empty($lieuNaissance) ? $lieuNaissance : null,
+                'cin' => !empty($cin) ? $cin : null,
+                'phone' => !empty($phone) ? $phone : null,
             ]);
+            $isNew = true;
+        }
 
-            if ($isNew) {
-                $this->summary['created']++;
-            } else {
-                $this->summary['matched']++;
-            }
+        $existingEnrollment = Enrollment::where([
+            'student_id' => $student->id,
+            'group_id' => $this->groupId,
+            'academic_year_id' => $this->academicYear->id,
+        ])->exists();
+
+        if ($existingEnrollment) {
+            $this->summary['skipped'][] = [
+                'row' => $rowNumber,
+                'reason' => "Student already enrolled in this group",
+            ];
+            return;
+        }
+
+        Enrollment::create([
+            'student_id' => $student->id,
+            'group_id' => $this->groupId,
+            'academic_year_id' => $this->academicYear->id,
+            'joined_at' => now()->toDateString(),
+        ]);
+
+        if ($isNew) {
+            $this->summary['created']++;
+        } else {
+            $this->summary['matched']++;
+        }
+    }
+
+    public function importFromArray(array $rows): void
+    {
+        if (!$this->academicYear) {
+            $this->summary['skipped'][] = [
+                'row' => 0,
+                'reason' => 'No current academic year found. Cannot import.',
+            ];
+            return;
+        }
+
+        foreach ($rows as $index => $row) {
+            $this->summary['total']++;
+            $rowNumber = $index + 2;
+            $this->processRow(collect($row), $rowNumber);
         }
     }
 

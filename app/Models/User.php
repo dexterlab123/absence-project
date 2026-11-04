@@ -12,7 +12,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'matricule'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -38,6 +38,14 @@ class User extends Authenticatable
     public function sessions(): HasMany
     {
         return $this->hasMany(Session::class, 'professor_id');
+    }
+
+    /**
+     * Groups assigned to this formateur.
+     */
+    public function groups(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Group::class, 'group_formateur', 'user_id', 'group_id')->withTimestamps();
     }
 
     /**

@@ -13,3 +13,273 @@
 
   --font-sans: -apple-system, "Segoe UI", Roboto, sans-serif;
 }
+
+/* ─── ISTA Nador design-system tokens (from reference prototype) ─── */
+:root {
+  --ista-ink: #17202a;
+  --ista-muted: #667085;
+  --ista-line: #d8dee8;
+  --ista-panel: #ffffff;
+  --ista-soft: #f4f7fb;
+  --ista-blue: #006eb8;
+  --ista-green: #0b8f55;
+  --ista-red: #c62828;
+  --ista-red-bg: #fff0f0;
+  --ista-amber: #a66400;
+  --ista-amber-bg: #fff7e8;
+  --ista-shadow: 0 12px 28px rgba(20, 32, 50, 0.11);
+  --ista-radius: 8px;
+  --ista-topbar-bg: #071a12;
+  --ista-topbar-sub: #b9f2d2;
+}
+
+/* ─── Login page ─── */
+.login-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  background: var(--ista-soft);
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--ista-ink);
+  line-height: 1.4;
+}
+
+.login-shell *,
+.login-shell *::before,
+.login-shell *::after {
+  box-sizing: border-box;
+}
+
+/* Top bar */
+.login-topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 18px;
+  background: var(--ista-topbar-bg);
+  color: white;
+  border-bottom: 4px solid var(--ista-green);
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.login-brand img {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  background: white;
+  border-radius: 7px;
+  padding: 4px;
+}
+
+.login-brand strong {
+  display: block;
+  font-size: 18px;
+  letter-spacing: 0;
+}
+
+.login-brand span {
+  display: block;
+  color: var(--ista-topbar-sub);
+  font-size: 13px;
+}
+
+/* Login stage */
+.login-stage {
+  min-height: calc(100vh - 88px);
+  display: grid;
+  align-items: center;
+  padding: 18px;
+}
+
+.login-panel {
+  width: min(760px, 100%);
+  margin: 0 auto;
+  background: var(--ista-panel);
+  border: 1px solid var(--ista-line);
+  border-radius: var(--ista-radius);
+  box-shadow: var(--ista-shadow);
+  overflow: hidden;
+}
+
+.login-head {
+  padding: 24px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  border-bottom: 1px solid var(--ista-line);
+  background: white;
+}
+
+.login-head img {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+}
+
+.login-head h1 {
+  margin: 0;
+  font-size: 25px;
+  letter-spacing: 0;
+  color: var(--ista-ink);
+}
+
+.login-head p {
+  margin: 6px 0 0;
+  color: var(--ista-muted);
+}
+
+/* Role tabs */
+.login-role-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 16px 16px 0;
+}
+
+.login-role-tabs button {
+  font: inherit;
+  border: 1px solid var(--ista-line);
+  border-radius: 7px;
+  padding: 9px 13px;
+  background: white;
+  color: var(--ista-ink);
+  cursor: pointer;
+  min-height: 38px;
+  font-weight: 600;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.login-role-tabs button:hover {
+  filter: brightness(0.96);
+}
+
+.login-role-tabs button.active {
+  background: var(--ista-blue);
+  color: white;
+  border-color: var(--ista-blue);
+}
+
+/* Form area */
+.login-form-area {
+  padding: 18px 24px 24px;
+}
+
+.login-notice {
+  padding: 10px 12px;
+  border-radius: var(--ista-radius);
+  margin: 0 0 14px;
+  background: #edf4fb;
+  color: #173b59;
+  border: 1px solid #cce0f2;
+  font-size: 14px;
+}
+
+.login-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 12px;
+  align-items: end;
+}
+
+.login-span-6 {
+  grid-column: span 6;
+}
+
+.login-span-12 {
+  grid-column: span 12;
+}
+
+.login-form-area label {
+  display: block;
+  margin-bottom: 5px;
+  color: #344054;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.login-form-area input {
+  width: 100%;
+  border: 1px solid var(--ista-line);
+  border-radius: 7px;
+  background: white;
+  color: var(--ista-ink);
+  padding: 9px 10px;
+  min-height: 38px;
+  font: inherit;
+}
+
+.login-form-area input:focus {
+  outline: none;
+  border-color: var(--ista-blue);
+  box-shadow: 0 0 0 3px rgba(0, 110, 184, 0.15);
+}
+
+.login-submit-btn {
+  font: inherit;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  padding: 9px 18px;
+  background: var(--ista-blue);
+  color: white;
+  cursor: pointer;
+  min-height: 38px;
+  font-weight: 600;
+  width: 100%;
+  transition: filter 0.15s;
+}
+
+.login-submit-btn:hover {
+  filter: brightness(0.92);
+}
+
+.login-submit-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.login-error {
+  color: var(--ista-red);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* Creator credit footer */
+.login-creator-credit {
+  padding: 12px 18px;
+  border-top: 1px solid var(--ista-line);
+  background: var(--ista-topbar-bg);
+  color: var(--ista-topbar-sub);
+  text-align: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 860px) {
+  .login-topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .login-role-tabs {
+    grid-template-columns: 1fr;
+  }
+  .login-grid {
+    grid-template-columns: 1fr;
+  }
+  .login-span-6,
+  .login-span-12 {
+    grid-column: span 1;
+  }
+  .login-head h1 {
+    font-size: 21px;
+  }
+  .login-head {
+    align-items: flex-start;
+  }
+}

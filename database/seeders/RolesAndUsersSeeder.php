@@ -14,9 +14,10 @@ class RolesAndUsersSeeder extends Seeder
     {
         // Create roles
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
-        $professorRole = Role::firstOrCreate(['name' => 'professor']);
+        $formateurRole = Role::firstOrCreate(['name' => 'formateur']);
+        $surveillantRole = Role::firstOrCreate(['name' => 'surveillant']);
 
-        // Create admin user
+        // Create admin user (uses email for login)
         $admin = User::firstOrCreate(
             ['email' => 'admin@ista-nador.ma'],
             [
@@ -27,16 +28,29 @@ class RolesAndUsersSeeder extends Seeder
         );
         $admin->assignRole($adminRole);
 
-        // Create sample professor user
-        $professor = User::firstOrCreate(
-            ['email' => 'professor@ista-nador.ma'],
+        // Create sample formateur user (uses matricule for login)
+        $formateur = User::firstOrCreate(
+            ['matricule' => 'F001'],
             [
-                'name' => 'Prof. Mohammed',
+                'name' => 'Mohammed Formateur',
+                'email' => 'formateur@ista-nador.ma',
                 'password' => bcrypt('password'),
                 'email_verified_at' => now(),
             ]
         );
-        $professor->assignRole($professorRole);
+        $formateur->assignRole($formateurRole);
+
+        // Create sample surveillant user (uses matricule for login)
+        $surveillant = User::firstOrCreate(
+            ['matricule' => 'S001'],
+            [
+                'name' => 'Ahmed Surveillant',
+                'email' => 'surveillant@ista-nador.ma',
+                'password' => bcrypt('password'),
+                'email_verified_at' => now(),
+            ]
+        );
+        $surveillant->assignRole($surveillantRole);
 
         // Create current academic year
         $academicYear = AcademicYear::firstOrCreate(
@@ -45,11 +59,14 @@ class RolesAndUsersSeeder extends Seeder
         );
 
         // Create sample groups
-        Group::firstOrCreate(
+        $group1 = Group::firstOrCreate(
             ['name' => 'DEV101', 'academic_year_id' => $academicYear->id]
         );
-        Group::firstOrCreate(
+        $group2 = Group::firstOrCreate(
             ['name' => 'DEV102', 'academic_year_id' => $academicYear->id]
         );
+
+        // Assign sample formateur to a group so they aren't locked out
+        $formateur->groups()->syncWithoutDetaching([$group1->id]);
     }
 }

@@ -32,4 +32,9 @@ class Group extends Model
     {
         return $this->hasMany(Session::class);
     }
+
+    public function formateurs(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'group_formateur', 'group_id', 'user_id')->withTimestamps();
+    }
 }

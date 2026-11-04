@@ -1,0 +1,1750 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ISTA Nador - Gestion des absences</title>
+  <style>
+    :root {
+      --ink: #17202a;
+      --muted: #667085;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #f4f7fb;
+      --blue: #006eb8;
+      --green: #0b8f55;
+      --red: #c62828;
+      --red-bg: #fff0f0;
+      --amber: #a66400;
+      --amber-bg: #fff7e8;
+      --shadow: 0 12px 28px rgba(20, 32, 50, 0.11);
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--soft);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.4;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid transparent;
+      border-radius: 7px;
+      padding: 9px 13px;
+      background: var(--blue);
+      color: white;
+      cursor: pointer;
+      min-height: 38px;
+    }
+
+    button:hover { filter: brightness(0.96); }
+    button.secondary {
+      background: white;
+      color: var(--ink);
+      border-color: var(--line);
+    }
+    button.success { background: var(--green); }
+    button.danger { background: var(--red); }
+    button.ghost {
+      background: transparent;
+      color: var(--blue);
+      border-color: transparent;
+    }
+    button:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: white;
+      color: var(--ink);
+      padding: 9px 10px;
+      min-height: 38px;
+    }
+
+    textarea {
+      min-height: 76px;
+      resize: vertical;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #344054;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .hidden { display: none !important; }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 18px;
+      background: #071a12;
+      color: white;
+      border-bottom: 4px solid var(--green);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand img {
+      width: 46px;
+      height: 46px;
+      object-fit: contain;
+      background: white;
+      border-radius: 7px;
+      padding: 4px;
+    }
+
+    .brand strong {
+      display: block;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    .brand span {
+      display: block;
+      color: #b9f2d2;
+      font-size: 13px;
+    }
+
+    .session {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    main {
+      width: min(1240px, calc(100vw - 28px));
+      margin: 18px auto 28px;
+    }
+
+    .login-stage {
+      min-height: calc(100vh - 88px);
+      display: grid;
+      align-items: center;
+    }
+
+    .login-panel {
+      width: min(760px, 100%);
+      margin: 0 auto;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .login-head {
+      padding: 24px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      background: white;
+    }
+
+    .login-head img {
+      width: 70px;
+      height: 70px;
+      object-fit: contain;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    h1 { font-size: 25px; }
+    h2 { font-size: 20px; }
+    h3 { font-size: 16px; }
+    p { margin: 6px 0 0; color: var(--muted); }
+
+    .role-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 16px 16px 0;
+    }
+
+    .role-tabs button {
+      background: white;
+      color: var(--ink);
+      border-color: var(--line);
+    }
+
+    .role-tabs button.active {
+      background: var(--blue);
+      color: white;
+      border-color: var(--blue);
+    }
+
+    .form-area {
+      padding: 18px 24px 24px;
+    }
+
+    .creator-credit {
+      padding: 12px 18px;
+      border-top: 1px solid var(--line);
+      background: #071a12;
+      color: #b9f2d2;
+      text-align: center;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 12px;
+      align-items: end;
+    }
+
+    .span-2 { grid-column: span 2; }
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-6 { grid-column: span 6; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin: 14px 0;
+    }
+
+    .section {
+      margin-top: 16px;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .section-head {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: #fbfcfe;
+    }
+
+    .section-body {
+      padding: 14px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 0 0 14px;
+    }
+
+    .tabs button {
+      background: white;
+      color: var(--ink);
+      border-color: var(--line);
+    }
+
+    .tabs button.active {
+      background: var(--green);
+      color: white;
+      border-color: var(--green);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: white;
+      padding: 12px;
+    }
+
+    .stat b {
+      display: block;
+      font-size: 24px;
+      color: var(--blue);
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: white;
+    }
+
+    table {
+      width: 100%;
+      min-width: 880px;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 10px 9px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      background: #edf4fb;
+      color: #173b59;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tr.unresolved {
+      background: var(--red-bg);
+    }
+
+    tr.unresolved td:first-child {
+      border-left: 5px solid var(--red);
+    }
+
+    tr.checked-row {
+      background: #f0fbf5;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      background: #eef2f7;
+      color: #344054;
+    }
+
+    .badge.red { background: var(--red-bg); color: var(--red); }
+    .badge.green { background: #eaf7ee; color: var(--green); }
+    .badge.amber { background: var(--amber-bg); color: var(--amber); }
+
+    .row-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .row-actions button {
+      min-height: 32px;
+      padding: 6px 9px;
+    }
+
+    .notice {
+      padding: 10px 12px;
+      border-radius: var(--radius);
+      margin: 10px 0;
+      background: #edf4fb;
+      color: #173b59;
+      border: 1px solid #cce0f2;
+      font-size: 14px;
+    }
+
+    .notice.red {
+      background: var(--red-bg);
+      border-color: #ffc9c9;
+      color: var(--red);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, .38);
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      z-index: 30;
+    }
+
+    .modal {
+      width: min(620px, 100%);
+      max-height: min(760px, calc(100vh - 36px));
+      overflow: auto;
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--line);
+    }
+
+    .modal header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .modal .content {
+      padding: 16px;
+    }
+
+    .modal footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .file-input {
+      border: 1px dashed #aeb9ca;
+      border-radius: var(--radius);
+      padding: 16px;
+      background: #fbfcfe;
+    }
+
+    .add-form {
+      margin-top: 14px;
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+    }
+
+    .checkbox-cell {
+      width: 46px;
+      text-align: center;
+    }
+
+    .checkbox-cell input {
+      width: 18px;
+      height: 18px;
+      min-height: 18px;
+    }
+
+    @media (max-width: 860px) {
+      main { width: calc(100vw - 16px); margin-top: 10px; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .session { justify-content: flex-start; }
+      .role-tabs { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: 1fr; }
+      .span-2, .span-3, .span-4, .span-5, .span-6, .span-8, .span-12 { grid-column: span 1; }
+      .stats { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+      h1 { font-size: 21px; }
+      .login-head { align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <img src="ofppt.png" alt="OFPPT">
+        <div>
+          <strong>ISTA NADOR</strong>
+          <span>Gestion des absences des stagiaires</span>
+        </div>
+      </div>
+      <div class="session hidden" id="sessionBar">
+        <span class="badge green" id="sessionRole"></span>
+        <span id="sessionName"></span>
+        <button class="secondary" id="changePasswordBtn">Mot de passe</button>
+        <button class="danger" id="logoutBtn">Sortir</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="login-stage" id="loginView">
+        <div class="login-panel">
+          <div class="login-head">
+            <img src="ofppt.png" alt="OFPPT">
+            <div>
+              <h1>Connexion ISTA NADOR</h1>
+              <p>Choisir la partie surveillant, formateur ou administrateur.</p>
+            </div>
+          </div>
+          <div class="role-tabs" id="roleTabs">
+            <button data-role="surveillant" class="active">Surveillant</button>
+            <button data-role="formateur">Formateur</button>
+            <button data-role="admin">Administrateur</button>
+          </div>
+          <div class="form-area">
+            <div class="notice" id="loginHint">Les surveillants importent les stagiaires et donnent les billets d'absence.</div>
+            <div class="grid" id="loginFields">
+              <div class="span-6">
+                <label for="loginId">Nom ou matricule formateur</label>
+                <input id="loginId" autocomplete="username" list="accountSuggestions">
+                <datalist id="accountSuggestions"></datalist>
+              </div>
+              <div class="span-6">
+                <label for="loginPassword">Mot de passe</label>
+                <input id="loginPassword" type="password" autocomplete="current-password">
+              </div>
+              <div class="span-12">
+                <button id="loginBtn">Entrer</button>
+              </div>
+            </div>
+          </div>
+          <div class="creator-credit">Créateur : ILIASSE ELATCHI | Tel : 0699279597</div>
+        </div>
+      </section>
+
+      <section id="appView" class="hidden">
+        <div class="stats" id="stats"></div>
+        <div class="tabs" id="appTabs"></div>
+
+        <section class="section" id="dashboardSection">
+          <div class="section-head">
+            <div>
+              <h2>Liste principale</h2>
+              <p>Les stagiaires avec absence non régularisée sont affichés en rouge et en haut.</p>
+            </div>
+            <button class="secondary" id="exportBtn">Exporter PDF</button>
+          </div>
+          <div class="section-body">
+            <div class="grid">
+              <div class="span-3">
+                <label for="searchInput">Recherche</label>
+                <input id="searchInput" placeholder="Nom, prénom ou code">
+              </div>
+              <div class="span-3">
+                <label for="filterFiliere">Filière</label>
+                <select id="filterFiliere"></select>
+              </div>
+              <div class="span-3">
+                <label for="filterGroupe">Groupe</label>
+                <select id="filterGroupe"></select>
+              </div>
+              <div class="span-3">
+                <button class="secondary" id="resetFiltersBtn">Tous</button>
+              </div>
+            </div>
+            <div class="toolbar" id="supervisorToolbar">
+              <button id="importTabShortcut">Importer stagiaires</button>
+              <button class="secondary" id="addStudentShortcut">Ajouter stagiaire</button>
+              <button class="secondary" id="supervisorPdfBtn">Exporter PDF</button>
+              <button class="secondary" id="printDetailsBtn">Imprimer détails</button>
+              <button class="secondary" id="statsBtn">Statistiques</button>
+              <button class="secondary" id="topAbsencesBtn">Top absences</button>
+              <button class="success" id="bulkAbsenceBilletBtn">Billet absence</button>
+              <button class="secondary" id="bulkRetardBilletBtn">Billet retard</button>
+              <span class="badge amber" id="billetSelectionCount">0 choisi</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th class="checkbox-cell">Choisir</th>
+                    <th>Code stagiaire</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Filière</th>
+                    <th>Groupe</th>
+                    <th>Absences</th>
+                    <th>Sans billet</th>
+                    <th>Dernière absence</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="mainTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="section hidden" id="markSection">
+          <div class="section-head">
+            <div>
+              <h2>Cocher les absences</h2>
+              <p>Le formateur filtre la filière et le groupe, puis coche seulement les absents.</p>
+            </div>
+            <button class="success" id="saveAbsencesBtn">Enregistrer les absences</button>
+          </div>
+          <div class="section-body">
+            <div class="grid">
+              <div class="span-3">
+                <label for="markFiliere">Filière</label>
+                <select id="markFiliere"></select>
+              </div>
+              <div class="span-3">
+                <label for="markGroupe">Groupe</label>
+                <select id="markGroupe"></select>
+              </div>
+              <div class="span-3">
+                <label for="markSearch">Recherche</label>
+                <input id="markSearch" placeholder="Nom ou code stagiaire">
+              </div>
+              <div class="span-3">
+                <label for="absenceDate">Date</label>
+                <input id="absenceDate" type="date">
+              </div>
+              <div class="span-3">
+                <label for="absenceModule">Module</label>
+                <input id="absenceModule" placeholder="Module du cours">
+              </div>
+              <div class="span-12">
+                <label for="absenceComment">Commentaire</label>
+                <textarea id="absenceComment" placeholder="Exemple: absent au cours du matin"></textarea>
+              </div>
+            </div>
+            <div class="toolbar">
+              <button class="secondary" id="selectAllVisibleBtn">Tout cocher</button>
+              <button class="secondary" id="clearSelectionBtn">Tout décocher</button>
+              <button class="secondary" id="exportPdfBtn">Exporter PDF</button>
+              <span class="badge amber" id="checkedCount">0 sélectionné</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th class="checkbox-cell">Absent</th>
+                    <th>Code stagiaire</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Filière</th>
+                    <th>Groupe</th>
+                    <th>Sans billet</th>
+                  </tr>
+                </thead>
+                <tbody id="markTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="section hidden" id="studentsSection">
+          <div class="section-head">
+            <div>
+              <h2>Stagiaires</h2>
+              <p>L'importation et l'ajout manuel sont réservés aux surveillants.</p>
+            </div>
+          </div>
+          <div class="section-body">
+            <div class="file-input">
+              <label for="importFile">Importer fichier OFPPT XML/XLS ou CSV</label>
+              <input id="importFile" type="file" accept=".xml,.xls,.csv,.txt">
+              <div class="toolbar">
+                <button id="importBtn">Importer</button>
+                <button class="secondary" id="clearStudentsBtn">Supprimer tous les stagiaires</button>
+              </div>
+            </div>
+            <div class="notice">Colonnes reconnues: MatriculeEtudiant, Nom, Prenom, LibelleLong, anneeEtude, NTelelephone.</div>
+            <div class="add-form">
+              <h3>Ajouter un stagiaire</h3>
+              <div class="grid" style="margin-top:12px">
+                <div class="span-3"><label>Code stagiaire</label><input id="studentCode"></div>
+                <div class="span-3"><label>Nom</label><input id="studentNom"></div>
+                <div class="span-3"><label>Prénom</label><input id="studentPrenom"></div>
+                <div class="span-3"><label>Téléphone</label><input id="studentTel"></div>
+                <div class="span-6"><label>Filière</label><input id="studentFiliere"></div>
+                <div class="span-6"><label>Groupe</label><input id="studentGroupe"></div>
+                <div class="span-12"><button id="addStudentBtn">Ajouter stagiaire</button></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section hidden" id="teachersSection">
+          <div class="section-head">
+            <div>
+              <h2>Administration</h2>
+              <p>L'administrateur crée la liste des formateurs et des surveillants.</p>
+            </div>
+          </div>
+          <div class="section-body">
+            <div class="grid">
+              <div class="span-4"><label for="teacherName">Nom formateur</label><input id="teacherName"></div>
+              <div class="span-4"><label for="teacherMatricule">Matricule</label><input id="teacherMatricule"></div>
+              <div class="span-4"><label for="teacherPassword">Mot de passe</label><input id="teacherPassword" type="password"></div>
+              <div class="span-12">
+                <label>Groupes autorisés</label>
+                <div class="file-input" id="teacherGroupsCreate"></div>
+              </div>
+              <div class="span-12"><button id="addTeacherBtn">Créer le compte formateur</button></div>
+            </div>
+            <div class="table-wrap" style="margin-top:14px">
+              <table>
+                <thead><tr><th>Nom</th><th>Matricule</th><th>Groupes autorisés</th><th>Action</th></tr></thead>
+                <tbody id="teachersTable"></tbody>
+              </table>
+            </div>
+            <div class="add-form">
+              <h3>Créer un surveillant</h3>
+              <div class="grid" style="margin-top:12px">
+                <div class="span-5"><label for="supervisorName">Nom surveillant</label><input id="supervisorName"></div>
+                <div class="span-5"><label for="supervisorPassword">Mot de passe</label><input id="supervisorPassword" type="password"></div>
+                <div class="span-2"><button id="addSupervisorBtn">Créer</button></div>
+              </div>
+              <div class="table-wrap" style="margin-top:14px">
+                <table>
+                  <thead><tr><th>Nom surveillant</th><th>Action</th></tr></thead>
+                  <tbody id="supervisorsTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="modalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true">
+      <header>
+        <h2 id="modalTitle">Détails</h2>
+        <button class="secondary" id="modalCloseBtn">Fermer</button>
+      </header>
+      <div class="content" id="modalContent"></div>
+      <footer id="modalFooter"></footer>
+    </div>
+  </div>
+
+  <script>
+    const STORE_KEY = "ista-nador-web-v1";
+    const today = new Date().toISOString().slice(0, 10);
+
+    const defaults = {
+      adminPassword: "ISTA2000",
+      surveillants: [
+        { name: "Mr Ait Hammou Abdelfatah", password: "ISTA2015" },
+        { name: "Mr Merbah Moulay Ahmed", password: "ISTA2000" }
+      ],
+      teachers: [
+        { name: "Formateur Démo", matricule: "F001", password: "1234", groups: ["Génie mécanique||1A"] }
+      ],
+      students: [
+        { id: "s1", code: "NDR001", nom: "EL AMRANI", prenom: "Youssef", filiere: "Génie mécanique", groupe: "1A", telephone: "" },
+        { id: "s2", code: "NDR002", nom: "BENALI", prenom: "Salma", filiere: "Génie mécanique", groupe: "1A", telephone: "" },
+        { id: "s3", code: "NDR003", nom: "AIT SAID", prenom: "Nabil", filiere: "Développement digital", groupe: "2B", telephone: "" }
+      ],
+      absences: [
+        { id: "a1", studentId: "s1", date: today, module: "Module démo", category: "absence", justification: "", comment: "Absence enregistrée par formateur", auteur: "Formateur Démo", role: "formateur", billet: false, billetBy: "", billetAt: "" }
+      ]
+    };
+
+    let db = loadDb();
+    let currentRole = "surveillant";
+    let session = null;
+    let activeTab = "dashboard";
+    const checkedAbsences = new Set();
+    const selectedBilletStudents = new Set();
+
+    const el = (id) => document.getElementById(id);
+
+    function loadDb() {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (!raw) {
+        localStorage.setItem(STORE_KEY, JSON.stringify(defaults));
+        return structuredClone(defaults);
+      }
+      try {
+        const parsed = JSON.parse(raw);
+        return {
+          adminPassword: parsed.adminPassword || defaults.adminPassword,
+          surveillants: parsed.surveillants || defaults.surveillants,
+          teachers: (parsed.teachers || []).map((teacher) => ({ ...teacher, groups: teacher.groups || [] })),
+          students: parsed.students || [],
+          absences: parsed.absences || []
+        };
+      } catch {
+        localStorage.setItem(STORE_KEY, JSON.stringify(defaults));
+        return structuredClone(defaults);
+      }
+    }
+
+    function saveDb() {
+      localStorage.setItem(STORE_KEY, JSON.stringify(db));
+    }
+
+    function uid(prefix) {
+      return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    }
+
+    function normalize(value) {
+      return String(value || "").trim();
+    }
+
+    function lower(value) {
+      return normalize(value).toLowerCase();
+    }
+
+    function escapeHtml(value) {
+      return String(value || "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      }[char]));
+    }
+
+    function studentAbsences(studentId) {
+      return db.absences.filter((a) => a.studentId === studentId);
+    }
+
+    function unresolvedAbsences(studentId) {
+      return studentAbsences(studentId).filter((a) => !a.billet);
+    }
+
+    function updateAccountSuggestions() {
+      const suggestions = el("accountSuggestions");
+      if (!suggestions) return;
+      let values = [];
+      if (currentRole === "surveillant") values = db.surveillants.map((u) => u.name);
+      if (currentRole === "formateur") values = db.teachers.map((u) => u.matricule);
+      if (currentRole === "admin") values = ["admin"];
+      suggestions.innerHTML = values.map((value) => `<option value="${escapeHtml(value)}"></option>`).join("");
+    }
+
+    function groupKeyFromValues(filiere, groupe) {
+      return `${normalize(filiere)}||${normalize(groupe)}`;
+    }
+
+    function groupKey(student) {
+      return groupKeyFromValues(student.filiere, student.groupe);
+    }
+
+    function groupLabel(key) {
+      const [filiere, groupe] = String(key || "").split("||");
+      return `${filiere || "Sans filière"} / ${groupe || "Sans groupe"}`;
+    }
+
+    function allGroupKeys() {
+      return [...new Set(db.students.map(groupKey).filter((key) => key !== "||"))].sort((a, b) => groupLabel(a).localeCompare(groupLabel(b)));
+    }
+
+    function canTeacherSeeStudent(student) {
+      if (!session || session.role !== "formateur") return true;
+      return (session.groups || []).includes(groupKey(student));
+    }
+
+    function getFilieres(students = db.students) {
+      return [...new Set(students.map((s) => normalize(s.filiere)).filter(Boolean))].sort();
+    }
+
+    function getGroupes(filiere = "", students = db.students) {
+      return [...new Set(students
+        .filter((s) => !filiere || s.filiere === filiere)
+        .map((s) => normalize(s.groupe)).filter(Boolean))].sort();
+    }
+
+    function fillSelect(select, values, allLabel = "Tous") {
+      const current = select.value;
+      select.innerHTML = `<option value="">${allLabel}</option>` + values.map((v) => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+      if (values.includes(current)) select.value = current;
+    }
+
+    function refreshFilters() {
+      fillSelect(el("filterFiliere"), getFilieres());
+      fillSelect(el("filterGroupe"), getGroupes(el("filterFiliere").value));
+      const markStudents = session && session.role === "formateur" ? db.students.filter(canTeacherSeeStudent) : db.students;
+      fillSelect(el("markFiliere"), getFilieres(markStudents), "Choisir");
+      fillSelect(el("markGroupe"), getGroupes(el("markFiliere").value, markStudents), "Choisir");
+    }
+
+    function filteredStudents(prefix) {
+      const search = lower(el(prefix + "Search") ? el(prefix + "Search").value : el("searchInput").value);
+      const filiere = el(prefix + "Filiere") ? el(prefix + "Filiere").value : el("filterFiliere").value;
+      const groupe = el(prefix + "Groupe") ? el(prefix + "Groupe").value : el("filterGroupe").value;
+      return db.students.filter((s) => {
+        const haystack = lower([s.code, s.nom, s.prenom, s.filiere, s.groupe].join(" "));
+        const allowed = prefix !== "mark" || canTeacherSeeStudent(s);
+        return allowed && (!search || haystack.includes(search)) && (!filiere || s.filiere === filiere) && (!groupe || s.groupe === groupe);
+      });
+    }
+
+    function renderStats() {
+      const unresolved = db.absences.filter((a) => !a.billet).length;
+      const justified = db.absences.filter((a) => a.billet).length;
+      el("stats").innerHTML = [
+        ["Stagiaires", db.students.length],
+        ["Absences totales", db.absences.length],
+        ["Sans billet", unresolved],
+        ["Avec billet", justified]
+      ].map(([label, value]) => `<div class="stat"><b>${value}</b><span>${label}</span></div>`).join("");
+    }
+
+    function renderTabs() {
+      let tabs = [{ id: "dashboard", label: "Liste principale" }];
+      if (session.role === "formateur") tabs.push({ id: "mark", label: "Cocher absence" });
+      if (session.role === "surveillant") tabs.push({ id: "students", label: "Import stagiaires" });
+      if (session.role === "admin") tabs = [{ id: "teachers", label: "Administration" }];
+
+      if (!tabs.some((tab) => tab.id === activeTab)) activeTab = tabs[0].id;
+
+      el("appTabs").innerHTML = tabs.map((tab) => `<button data-tab="${tab.id}" class="${tab.id === activeTab ? "active" : ""}">${tab.label}</button>`).join("");
+      el("appTabs").querySelectorAll("button").forEach((button) => {
+        button.addEventListener("click", () => {
+          activeTab = button.dataset.tab;
+          renderApp();
+        });
+      });
+
+      ["dashboard", "mark", "students", "teachers"].forEach((id) => {
+        el(id + "Section").classList.toggle("hidden", id !== activeTab);
+      });
+    }
+
+    function renderMainTable() {
+      const rows = filteredStudents("filter").map((s) => {
+        const abs = studentAbsences(s.id);
+        const unresolved = abs.filter((a) => !a.billet);
+        const latest = abs.slice().sort((a, b) => String(b.date).localeCompare(String(a.date)))[0];
+        return { s, abs, unresolved, latest };
+      }).sort((a, b) => {
+        if (a.unresolved.length && !b.unresolved.length) return -1;
+        if (!a.unresolved.length && b.unresolved.length) return 1;
+        return `${a.s.nom} ${a.s.prenom}`.localeCompare(`${b.s.nom} ${b.s.prenom}`);
+      });
+
+      el("mainTable").innerHTML = rows.map(({ s, abs, unresolved, latest }) => `
+        <tr class="${unresolved.length ? "unresolved" : ""}">
+          <td class="checkbox-cell">${session.role === "surveillant" ? `<input type="checkbox" data-billet-check="${s.id}" ${selectedBilletStudents.has(s.id) ? "checked" : ""}>` : ""}</td>
+          <td>${escapeHtml(s.code)}</td>
+          <td>${escapeHtml(s.nom)}</td>
+          <td>${escapeHtml(s.prenom)}</td>
+          <td>${escapeHtml(s.filiere)}</td>
+          <td>${escapeHtml(s.groupe)}</td>
+          <td><span class="badge">${abs.length}</span></td>
+          <td><span class="badge ${unresolved.length ? "red" : "green"}">${unresolved.length}</span></td>
+          <td>${latest ? escapeHtml(latest.date) : "-"}</td>
+          <td><div class="row-actions">
+            <button class="secondary" data-details="${s.id}">Détails</button>
+            ${session.role === "surveillant" && unresolved.length ? `<button class="success" data-billet="${s.id}">Billet absence</button>` : ""}
+          </div></td>
+        </tr>
+      `).join("") || `<tr><td colspan="10">Aucun stagiaire trouvé.</td></tr>`;
+
+      el("mainTable").querySelectorAll("[data-billet-check]").forEach((input) => {
+        input.addEventListener("change", () => {
+          if (input.checked) selectedBilletStudents.add(input.dataset.billetCheck);
+          else selectedBilletStudents.delete(input.dataset.billetCheck);
+          renderMainTable();
+        });
+      });
+      el("mainTable").querySelectorAll("[data-details]").forEach((button) => {
+        button.addEventListener("click", () => openDetails(button.dataset.details));
+      });
+      el("mainTable").querySelectorAll("[data-billet]").forEach((button) => {
+        button.addEventListener("click", () => openBilletMultiple("absence", [button.dataset.billet]));
+      });
+      el("billetSelectionCount").textContent = `${selectedBilletStudents.size} choisi${selectedBilletStudents.size > 1 ? "s" : ""}`;
+    }
+
+    function renderMarkTable() {
+      const rows = filteredStudents("mark");
+      el("markTable").innerHTML = rows.map((s) => {
+        const unresolved = unresolvedAbsences(s.id).length;
+        const checked = checkedAbsences.has(s.id);
+        return `
+          <tr class="${checked ? "checked-row" : ""}">
+            <td class="checkbox-cell"><input type="checkbox" data-check="${s.id}" ${checked ? "checked" : ""}></td>
+            <td>${escapeHtml(s.code)}</td>
+            <td>${escapeHtml(s.nom)}</td>
+            <td>${escapeHtml(s.prenom)}</td>
+            <td>${escapeHtml(s.filiere)}</td>
+            <td>${escapeHtml(s.groupe)}</td>
+            <td><span class="badge ${unresolved ? "red" : "green"}">${unresolved}</span></td>
+          </tr>
+        `;
+      }).join("") || `<tr><td colspan="7">Choisir une filière ou importer les stagiaires.</td></tr>`;
+
+      el("markTable").querySelectorAll("[data-check]").forEach((input) => {
+        input.addEventListener("change", () => {
+          if (input.checked) checkedAbsences.add(input.dataset.check);
+          else checkedAbsences.delete(input.dataset.check);
+          renderMarkTable();
+        });
+      });
+      el("checkedCount").textContent = `${checkedAbsences.size} sélectionné${checkedAbsences.size > 1 ? "s" : ""}`;
+    }
+
+    function renderTeachers() {
+      el("teachersTable").innerHTML = db.teachers.map((t) => `
+        <tr>
+          <td>${escapeHtml(t.name)}</td>
+          <td>${escapeHtml(t.matricule)}</td>
+          <td>${(t.groups || []).length ? (t.groups || []).map(groupLabel).map(escapeHtml).join("<br>") : "<span class=\"badge red\">Aucun groupe</span>"}</td>
+          <td><div class="row-actions"><button class="secondary" data-edit-teacher="${escapeHtml(t.matricule)}">Modifier groupes</button><button class="danger" data-delete-teacher="${escapeHtml(t.matricule)}">Supprimer</button></div></td>
+        </tr>
+      `).join("") || `<tr><td colspan="4">Aucun compte formateur.</td></tr>`;
+
+      el("teachersTable").querySelectorAll("[data-edit-teacher]").forEach((button) => {
+        button.addEventListener("click", () => openTeacherGroupsModal(button.dataset.editTeacher));
+      });
+      el("teachersTable").querySelectorAll("[data-delete-teacher]").forEach((button) => {
+        button.addEventListener("click", () => {
+          db.teachers = db.teachers.filter((t) => t.matricule !== button.dataset.deleteTeacher);
+          saveDb();
+          renderApp();
+        });
+      });
+    }
+
+    function renderTeacherGroupCheckboxes(containerId, selected = []) {
+      const container = el(containerId);
+      if (!container) return;
+      const groups = allGroupKeys();
+      if (!groups.length) {
+        container.innerHTML = "Importer les stagiaires avant d'affecter les groupes.";
+        return;
+      }
+      container.innerHTML = groups.map((key) => `
+        <label style="display:inline-flex;align-items:center;gap:7px;margin:4px 14px 4px 0;font-weight:400">
+          <input type="checkbox" value="${escapeHtml(key)}" ${selected.includes(key) ? "checked" : ""} style="width:16px;min-height:16px">
+          ${escapeHtml(groupLabel(key))}
+        </label>
+      `).join("");
+    }
+
+    function selectedTeacherGroups(containerId) {
+      return [...el(containerId).querySelectorAll("input[type='checkbox']:checked")].map((input) => input.value);
+    }
+
+    function openTeacherGroupsModal(matricule) {
+      const teacher = db.teachers.find((t) => t.matricule === matricule);
+      if (!teacher) return;
+      openModal(`Groupes - ${teacher.name}`, `
+        <div class="notice">Choisir seulement les groupes où ce formateur peut enregistrer l'absence.</div>
+        <div class="file-input" id="teacherGroupsEdit"></div>
+      `, `
+        <button class="secondary" id="cancelTeacherGroupsBtn">Annuler</button>
+        <button id="saveTeacherGroupsBtn">Enregistrer</button>
+      `);
+      renderTeacherGroupCheckboxes("teacherGroupsEdit", teacher.groups || []);
+      el("cancelTeacherGroupsBtn").addEventListener("click", closeModal);
+      el("saveTeacherGroupsBtn").addEventListener("click", () => {
+        teacher.groups = selectedTeacherGroups("teacherGroupsEdit");
+        saveDb();
+        closeModal();
+        renderApp();
+      });
+    }
+
+    function renderSupervisors() {
+      const table = el("supervisorsTable");
+      if (!table) return;
+      table.innerHTML = db.surveillants.map((s) => `
+        <tr>
+          <td>${escapeHtml(s.name)}</td>
+          <td><button class="danger" data-delete-supervisor="${escapeHtml(s.name)}">Supprimer</button></td>
+        </tr>
+      `).join("") || `<tr><td colspan="2">Aucun surveillant.</td></tr>`;
+
+      table.querySelectorAll("[data-delete-supervisor]").forEach((button) => {
+        button.addEventListener("click", () => {
+          if (db.surveillants.length <= 1) return alert("Il faut garder au moins un surveillant.");
+          db.surveillants = db.surveillants.filter((s) => s.name !== button.dataset.deleteSupervisor);
+          saveDb();
+          renderApp();
+        });
+      });
+    }
+
+    function renderApp() {
+      if (!session) return;
+      el("sessionBar").classList.remove("hidden");
+      el("sessionRole").textContent = session.role.toUpperCase();
+      el("sessionName").textContent = session.name;
+      el("supervisorToolbar").classList.toggle("hidden", session.role !== "surveillant");
+      el("changePasswordBtn").classList.remove("hidden");
+      refreshFilters();
+      renderStats();
+      renderTabs();
+      renderMainTable();
+      renderMarkTable();
+      renderTeachers();
+      renderSupervisors();
+      renderTeacherGroupCheckboxes("teacherGroupsCreate");
+    }
+
+    function setRole(role) {
+      currentRole = role;
+      el("roleTabs").querySelectorAll("button").forEach((button) => button.classList.toggle("active", button.dataset.role === role));
+      const id = el("loginId");
+      const pass = el("loginPassword");
+      if (role === "surveillant") {
+        el("loginHint").textContent = "Les surveillants importent les stagiaires et donnent les billets d'absence ou de retard.";
+        id.placeholder = "Choisir ou écrire le nom du surveillant";
+      } else if (role === "formateur") {
+        el("loginHint").textContent = "Les formateurs se connectent par matricule, cochent les absences, puis peuvent changer leur mot de passe.";
+        id.placeholder = "Choisir ou écrire le matricule formateur";
+      } else {
+        el("loginHint").textContent = "L'administrateur crée les comptes formateurs et surveillants.";
+        id.placeholder = "admin";
+      }
+      id.value = "";
+      pass.value = "";
+      updateAccountSuggestions();
+    }
+
+    function login() {
+      const id = normalize(el("loginId").value);
+      const password = normalize(el("loginPassword").value);
+      if (currentRole === "surveillant") {
+        const user = db.surveillants.find((u) => u.name === id && u.password === password);
+        if (!user) return alert("Nom de surveillant ou mot de passe incorrect.");
+        session = { role: "surveillant", name: user.name, id: user.name };
+      } else if (currentRole === "formateur") {
+        const user = db.teachers.find((u) => u.matricule === id && u.password === password);
+        if (!user) return alert("Matricule formateur ou mot de passe incorrect.");
+        session = { role: "formateur", name: user.name, id: user.matricule, groups: user.groups || [] };
+        activeTab = "mark";
+      } else {
+        if (id !== "admin" || password !== db.adminPassword) return alert("Code administrateur incorrect.");
+        session = { role: "admin", name: "Administrateur", id: "admin" };
+        activeTab = "teachers";
+      }
+      el("loginView").classList.add("hidden");
+      el("appView").classList.remove("hidden");
+      renderApp();
+    }
+
+    function logout() {
+      session = null;
+      checkedAbsences.clear();
+      selectedBilletStudents.clear();
+      activeTab = "dashboard";
+      el("loginView").classList.remove("hidden");
+      el("appView").classList.add("hidden");
+      el("sessionBar").classList.add("hidden");
+    }
+
+    function openModal(title, body, footer = "") {
+      el("modalTitle").textContent = title;
+      el("modalContent").innerHTML = body;
+      el("modalFooter").innerHTML = footer || `<button class="secondary" id="modalOkBtn">Fermer</button>`;
+      el("modalBackdrop").classList.remove("hidden");
+      const ok = el("modalOkBtn");
+      if (ok) ok.addEventListener("click", closeModal);
+    }
+
+    function closeModal() {
+      el("modalBackdrop").classList.add("hidden");
+    }
+
+    function openDetails(studentId) {
+      const s = db.students.find((item) => item.id === studentId);
+      if (!s) return;
+      const abs = studentAbsences(studentId).slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
+      const rows = abs.map((a) => `
+        <tr>
+          <td>${escapeHtml(a.date)}</td>
+          <td>${escapeHtml(a.module || "-")}</td>
+          <td>${escapeHtml(a.category === "retard" ? "Retard" : "Absence")}</td>
+          <td>${escapeHtml(a.auteur)}</td>
+          <td>${escapeHtml(a.role)}</td>
+          <td><span class="badge ${a.billet ? "green" : "red"}">${a.billet ? "Billet donné" : "Sans billet"}</span></td>
+          <td>${escapeHtml(a.justification || "-")}</td>
+          <td>${escapeHtml(a.billetBy || "-")}</td>
+          <td>${escapeHtml(a.comment)}</td>
+        </tr>
+      `).join("") || `<tr><td colspan="9">Aucune absence.</td></tr>`;
+      openModal(`Détails - ${s.nom} ${s.prenom}`, `
+        <p><b>Code stagiaire:</b> ${escapeHtml(s.code)} | <b>Filière:</b> ${escapeHtml(s.filiere)} | <b>Groupe:</b> ${escapeHtml(s.groupe)}</p>
+        <div class="table-wrap" style="margin-top:12px">
+          <table>
+            <thead><tr><th>Date</th><th>Module</th><th>Type</th><th>Donné par</th><th>Rôle</th><th>Statut</th><th>Justification</th><th>Billet donné par</th><th>Commentaire</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `);
+    }
+
+    function openBilletMultiple(kind, studentIds) {
+      const uniqueIds = [...new Set(studentIds)].filter((id) => db.students.some((s) => s.id === id));
+      const targets = uniqueIds.map((id) => {
+        const student = db.students.find((s) => s.id === id);
+        return { student, unresolved: unresolvedAbsences(id) };
+      }).filter((item) => kind === "retard" || item.unresolved.length);
+
+      if (!targets.length) {
+        alert(kind === "retard" ? "Cochez au moins un stagiaire." : "Aucun stagiaire choisi avec absence sans billet.");
+        return;
+      }
+
+      const rows = targets.map(({ student, unresolved }) => `
+        <tr>
+          <td>${escapeHtml(student.code)}</td>
+          <td>${escapeHtml(student.nom)} ${escapeHtml(student.prenom)}</td>
+          <td>${escapeHtml(student.filiere)}</td>
+          <td>${escapeHtml(student.groupe)}</td>
+          <td>${kind === "absence" ? unresolved.length : 1}</td>
+          <td>
+            <select id="justif-${student.id}">
+              <option value="Justifié">Justifié</option>
+              <option value="Non justifié">Non justifié</option>
+            </select>
+          </td>
+        </tr>
+      `).join("");
+
+      openModal(kind === "retard" ? "Billet de retard" : "Billet d'absence", `
+        <div class="notice">${kind === "retard" ? "Le surveillant donne un billet de retard aux stagiaires cochés." : "Le surveillant régularise les absences sans billet des stagiaires cochés."}</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Code</th><th>Stagiaire</th><th>Filière</th><th>Groupe</th><th>Nombre</th><th>Justification</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+        <label for="billetComment" style="margin-top:12px">Commentaire commun</label>
+        <textarea id="billetComment" placeholder="Motif ou observation"></textarea>
+      `, `
+        <button class="secondary" id="cancelBilletBtn">Annuler</button>
+        <button class="success" id="confirmBilletBtn">Donner le billet</button>
+      `);
+
+      el("cancelBilletBtn").addEventListener("click", closeModal);
+      el("confirmBilletBtn").addEventListener("click", () => {
+        const comment = normalize(el("billetComment").value);
+        const now = new Date();
+        targets.forEach(({ student, unresolved }) => {
+          const justification = el(`justif-${student.id}`).value;
+          if (kind === "absence") {
+            unresolved.forEach((a) => {
+              a.billet = true;
+              a.billetBy = session.name;
+              a.billetAt = now.toISOString();
+              a.justification = justification;
+              a.category = a.category || "absence";
+              if (comment) a.comment = `${a.comment ? a.comment + " | " : ""}Billet ${justification.toLowerCase()}: ${comment}`;
+            });
+          } else {
+            db.absences.push({
+              id: uid("r"),
+              studentId: student.id,
+              date: now.toISOString().slice(0, 10),
+              module: "",
+              category: "retard",
+              justification,
+              comment,
+              auteur: session.name,
+              role: "surveillant",
+              billet: true,
+              billetBy: session.name,
+              billetAt: now.toISOString()
+            });
+          }
+        });
+        selectedBilletStudents.clear();
+        saveDb();
+        closeModal();
+        renderApp();
+      });
+    }
+
+    function openPasswordModal() {
+      openModal("Changer le mot de passe", `
+        <div class="grid">
+          <div class="span-12"><label>Ancien mot de passe</label><input id="oldPassword" type="password"></div>
+          <div class="span-12"><label>Nouveau mot de passe</label><input id="newPassword" type="password"></div>
+          <div class="span-12"><label>Confirmation</label><input id="confirmPassword" type="password"></div>
+        </div>
+      `, `
+        <button class="secondary" id="cancelPasswordBtn">Annuler</button>
+        <button id="savePasswordBtn">Enregistrer</button>
+      `);
+      el("cancelPasswordBtn").addEventListener("click", closeModal);
+      el("savePasswordBtn").addEventListener("click", () => {
+        const oldPassword = normalize(el("oldPassword").value);
+        const newPassword = normalize(el("newPassword").value);
+        const confirmPassword = normalize(el("confirmPassword").value);
+        if (!newPassword || newPassword !== confirmPassword) return alert("Le nouveau mot de passe ne correspond pas.");
+        if (session.role === "admin") {
+          if (db.adminPassword !== oldPassword) return alert("Ancien mot de passe incorrect.");
+          db.adminPassword = newPassword;
+          saveDb();
+          closeModal();
+          alert("Mot de passe administrateur modifié.");
+          return;
+        }
+        const list = session.role === "formateur" ? db.teachers : db.surveillants;
+        const user = list.find((u) => (session.role === "formateur" ? u.matricule : u.name) === session.id);
+        if (!user || user.password !== oldPassword) return alert("Ancien mot de passe incorrect.");
+        user.password = newPassword;
+        saveDb();
+        closeModal();
+        alert("Mot de passe modifié.");
+      });
+    }
+
+    function saveAbsences() {
+      if (!checkedAbsences.size) return alert("Cochez au moins un stagiaire absent.");
+      const date = el("absenceDate").value || today;
+      const module = normalize(el("absenceModule").value);
+      const comment = normalize(el("absenceComment").value);
+      checkedAbsences.forEach((studentId) => {
+        db.absences.push({
+          id: uid("a"),
+          studentId,
+          date,
+          module,
+          category: "absence",
+          justification: "",
+          comment,
+          auteur: session.name,
+          role: "formateur",
+          billet: false,
+          billetBy: "",
+          billetAt: ""
+        });
+      });
+      checkedAbsences.clear();
+      el("absenceComment").value = "";
+      el("absenceModule").value = "";
+      saveDb();
+      renderApp();
+      alert("Absences enregistrées. Elles restent rouges jusqu'au billet du surveillant.");
+    }
+
+    function parseCsv(text) {
+      const lines = text.split(/\r?\n/).filter((line) => line.trim());
+      if (!lines.length) return [];
+      const sep = lines[0].includes(";") ? ";" : ",";
+      const headers = lines[0].split(sep).map(normalize);
+      return lines.slice(1).map((line) => {
+        const values = line.split(sep).map(normalize);
+        return Object.fromEntries(headers.map((h, i) => [h, values[i] || ""]));
+      });
+    }
+
+    function parseOfpptXml(text) {
+      const doc = new DOMParser().parseFromString(text, "text/xml");
+      let rows = [...doc.getElementsByTagNameNS("*", "Row")];
+      if (!rows.length) rows = [...doc.getElementsByTagName("Row"), ...doc.getElementsByTagName("ss:Row")];
+      const data = rows.map((row) => {
+        let cells = [...row.getElementsByTagNameNS("*", "Data")];
+        if (!cells.length) cells = [...row.getElementsByTagName("Data"), ...row.getElementsByTagName("ss:Data")];
+        return cells.map((cell) => normalize(cell.textContent));
+      });
+      if (!data.length) return [];
+      const headers = data[0];
+      return data.slice(1).map((values) => Object.fromEntries(headers.map((h, i) => [h, values[i] || ""])));
+    }
+
+    async function importStudents() {
+      const file = el("importFile").files[0];
+      if (!file) return alert("Choisir un fichier à importer.");
+      const text = await file.text();
+      const rows = file.name.toLowerCase().endsWith(".csv") || file.name.toLowerCase().endsWith(".txt") ? parseCsv(text) : parseOfpptXml(text);
+      let count = 0;
+      rows.forEach((row) => {
+        const code = normalize(row.MatriculeEtudiant || row.Code || row.Matricule || row.matricule);
+        if (!code || db.students.some((s) => s.code === code)) return;
+        db.students.push({
+          id: uid("s"),
+          code,
+          nom: normalize(row.Nom),
+          prenom: normalize(row.Prenom || row["Prénom"]),
+          filiere: normalize(row.LibelleLong || row.Filiere || row["Filière"]),
+          groupe: normalize(row.anneeEtude || row.Groupe || row.Niveau),
+          telephone: normalize(row.NTelelephone || row.Telephone || row["Téléphone"])
+        });
+        count++;
+      });
+      saveDb();
+      renderApp();
+      alert(`${count} stagiaire(s) importé(s).`);
+    }
+
+    function addStudent() {
+      const code = normalize(el("studentCode").value);
+      if (!code) return alert("Le code stagiaire est obligatoire.");
+      if (db.students.some((s) => s.code === code)) return alert("Ce code stagiaire existe déjà.");
+      db.students.push({
+        id: uid("s"),
+        code,
+        nom: normalize(el("studentNom").value),
+        prenom: normalize(el("studentPrenom").value),
+        filiere: normalize(el("studentFiliere").value),
+        groupe: normalize(el("studentGroupe").value),
+        telephone: normalize(el("studentTel").value)
+      });
+      ["studentCode", "studentNom", "studentPrenom", "studentFiliere", "studentGroupe", "studentTel"].forEach((id) => el(id).value = "");
+      saveDb();
+      renderApp();
+    }
+
+    function addTeacher() {
+      const name = normalize(el("teacherName").value);
+      const matricule = normalize(el("teacherMatricule").value);
+      const password = normalize(el("teacherPassword").value);
+      const groups = selectedTeacherGroups("teacherGroupsCreate");
+      if (!name || !matricule || !password) return alert("Nom, matricule et mot de passe sont obligatoires.");
+      if (!groups.length) return alert("Choisissez au moins un groupe autorisé pour ce formateur.");
+      if (db.teachers.some((t) => t.matricule === matricule)) return alert("Ce matricule existe déjà.");
+      db.teachers.push({ name, matricule, password, groups });
+      ["teacherName", "teacherMatricule", "teacherPassword"].forEach((id) => el(id).value = "");
+      saveDb();
+      renderApp();
+    }
+
+    function addSupervisor() {
+      const name = normalize(el("supervisorName").value);
+      const password = normalize(el("supervisorPassword").value);
+      if (!name || !password) return alert("Nom et mot de passe du surveillant sont obligatoires.");
+      if (db.surveillants.some((s) => s.name === name)) return alert("Ce surveillant existe déjà.");
+      db.surveillants.push({ name, password });
+      el("supervisorName").value = "";
+      el("supervisorPassword").value = "";
+      saveDb();
+      renderApp();
+    }
+
+    function exportAbsencesPdf(prefix = "mark") {
+      const rows = filteredStudents(prefix).map((s) => ({
+        student: s,
+        absences: studentAbsences(s.id).slice().sort((a, b) => String(a.date).localeCompare(String(b.date)))
+      })).filter((row) => row.absences.length);
+
+      if (!rows.length) return alert("Aucune absence à exporter avec ce filtre.");
+
+      const filiere = (prefix === "mark" ? el("markFiliere").value : el("filterFiliere").value) || "Toutes les filières";
+      const groupe = (prefix === "mark" ? el("markGroupe").value : el("filterGroupe").value) || "Tous les groupes";
+      const generatedAt = new Date().toLocaleString("fr-FR");
+      const tableRows = rows.flatMap(({ student, absences }) => absences.map((a) => `
+        <tr>
+          <td>${escapeHtml(student.code)}</td>
+          <td>${escapeHtml(student.nom)} ${escapeHtml(student.prenom)}</td>
+          <td>${escapeHtml(student.filiere)}</td>
+          <td>${escapeHtml(student.groupe)}</td>
+          <td>${escapeHtml(a.date)}</td>
+          <td>${escapeHtml(a.module || "-")}</td>
+          <td>${escapeHtml(a.category === "retard" ? "Retard" : "Absence")}</td>
+          <td>${escapeHtml(a.auteur)}</td>
+          <td>${a.billet ? "Avec billet" : "Sans billet"}</td>
+          <td>${escapeHtml(a.justification || "-")}</td>
+          <td>${escapeHtml(a.billetBy || "-")}</td>
+          <td>${escapeHtml(a.comment || "")}</td>
+        </tr>
+      `)).join("");
+
+      const html = `<!doctype html>
+        <html lang="fr">
+        <head>
+          <meta charset="utf-8">
+          <title>Absences ISTA NADOR</title>
+          <style>
+            body { font-family: Arial, Helvetica, sans-serif; color: #17202a; margin: 24px; }
+            header { display: flex; align-items: center; gap: 14px; border-bottom: 2px solid #006eb8; padding-bottom: 10px; margin-bottom: 12px; }
+            header img { width: 60px; height: 60px; object-fit: contain; }
+            h1 { margin: 0 0 4px; font-size: 22px; }
+            p { margin: 4px 0; color: #475467; }
+            table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 11px; }
+            th, td { border: 1px solid #9aa4b2; padding: 6px; text-align: left; vertical-align: top; }
+            th { background: #edf4fb; }
+            @media print { body { margin: 12mm; } }
+          </style>
+        </head>
+        <body>
+          <header>
+            <img src="ofppt.png" alt="OFPPT">
+            <div>
+              <h1>ISTA NADOR - Fiche complète des absences</h1>
+              <p>Filière: ${escapeHtml(filiere)} | Groupe: ${escapeHtml(groupe)} | Exporté par: ${escapeHtml(session.name)} | ${escapeHtml(generatedAt)}</p>
+            </div>
+          </header>
+          <table>
+            <thead>
+              <tr><th>Code</th><th>Stagiaire</th><th>Filière</th><th>Groupe</th><th>Date</th><th>Module</th><th>Type</th><th>Donné par</th><th>Statut</th><th>Justification</th><th>Billet donné par</th><th>Commentaire</th></tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+          </table>
+          <script>window.onload = () => setTimeout(() => window.print(), 250);<\/script>
+        </body>
+        </html>`;
+
+      const printWindow = window.open("", "_blank");
+      if (!printWindow) return alert("Autorisez l'ouverture de fenêtre pour exporter en PDF.");
+      printWindow.document.write(html);
+      printWindow.document.close();
+    }
+
+    function openPrintWindow(html) {
+      const printWindow = window.open("", "_blank");
+      if (!printWindow) return alert("Autorisez l'ouverture de fenêtre pour imprimer en PDF.");
+      printWindow.document.write(html);
+      printWindow.document.close();
+    }
+
+    function printableStudentDetails(studentIds = []) {
+      const ids = studentIds.length ? studentIds : filteredStudents("filter").map((s) => s.id);
+      const students = [...new Set(ids)]
+        .map((id) => db.students.find((s) => s.id === id))
+        .filter(Boolean)
+        .sort((a, b) => `${a.filiere} ${a.groupe} ${a.nom} ${a.prenom}`.localeCompare(`${b.filiere} ${b.groupe} ${b.nom} ${b.prenom}`));
+
+      if (!students.length) return alert("Choisir au moins un stagiaire ou appliquer un filtre.");
+
+      const generatedAt = new Date().toLocaleString("fr-FR");
+      const pages = students.map((student) => {
+        const records = studentAbsences(student.id).slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
+        const absenceCount = records.filter((a) => (a.category || "absence") === "absence").length;
+        const retardCount = records.filter((a) => a.category === "retard").length;
+        const sansBillet = records.filter((a) => !a.billet).length;
+        const detailRows = records.map((a) => `
+          <tr>
+            <td>${escapeHtml(a.date)}</td>
+            <td>${escapeHtml(a.category === "retard" ? "Retard" : "Absence")}</td>
+            <td>${escapeHtml(a.module || "-")}</td>
+            <td>${escapeHtml(a.auteur || "-")}</td>
+            <td>${escapeHtml(a.justification || "-")}</td>
+            <td>${a.billet ? "Avec billet" : "Sans billet"}</td>
+            <td>${escapeHtml(a.billetBy || "-")}</td>
+            <td>${escapeHtml(a.comment || "")}</td>
+          </tr>
+        `).join("") || `<tr><td colspan="8">Aucun historique.</td></tr>`;
+
+        return `
+          <section class="page">
+            <header>
+              <img src="ofppt.png" alt="OFPPT">
+              <div>
+                <h1>ISTA NADOR - Détail stagiaire</h1>
+                <p>Date: ${escapeHtml(generatedAt)}</p>
+              </div>
+            </header>
+            <div class="identity">
+              <strong>${escapeHtml(student.nom)} ${escapeHtml(student.prenom)}</strong><br>
+              Code: ${escapeHtml(student.code)} | Filière: ${escapeHtml(student.filiere)} | Groupe: ${escapeHtml(student.groupe)}
+            </div>
+            <div class="cards">
+              <div><b>${absenceCount}</b><span>Absences</span></div>
+              <div><b>${retardCount}</b><span>Retards</span></div>
+              <div><b>${sansBillet}</b><span>Sans billet</span></div>
+            </div>
+            <table>
+              <thead><tr><th>Date</th><th>Type</th><th>Module</th><th>Donné par</th><th>Justification</th><th>Statut</th><th>Billet par</th><th>Commentaire</th></tr></thead>
+              <tbody>${detailRows}</tbody>
+            </table>
+          </section>
+        `;
+      }).join("");
+
+      openPrintWindow(`<!doctype html>
+        <html lang="fr">
+        <head>
+          <meta charset="utf-8">
+          <title>Détails stagiaires ISTA NADOR</title>
+          <style>
+            body { font-family: Arial, Helvetica, sans-serif; color: #17202a; margin: 0; }
+            .page { padding: 14mm; page-break-after: always; }
+            header { display: flex; align-items: center; gap: 14px; border-bottom: 2px solid #006eb8; padding-bottom: 10px; }
+            header img { width: 62px; height: 62px; object-fit: contain; }
+            h1 { font-size: 20px; margin: 0 0 4px; }
+            p { margin: 0; color: #475467; }
+            .identity { margin: 14px 0; padding: 10px; background: #f4f7fb; border: 1px solid #d8dee8; }
+            .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+            .cards div { border: 1px solid #d8dee8; padding: 8px; }
+            .cards b { display:block; font-size:20px; color:#006eb8; }
+            .cards span { color:#475467; font-size:12px; }
+            table { width: 100%; border-collapse: collapse; font-size: 11px; }
+            th, td { border: 1px solid #9aa4b2; padding: 6px; text-align: left; vertical-align: top; }
+            th { background: #edf4fb; }
+            @media print { .page { min-height: 270mm; } }
+          </style>
+        </head>
+        <body>${pages}<script>window.onload = () => setTimeout(() => window.print(), 250);<\/script></body>
+        </html>`);
+    }
+
+    function openTopAbsences() {
+      const rows = filteredStudents("filter").map((student) => {
+        const absences = studentAbsences(student.id).filter((a) => (a.category || "absence") === "absence");
+        const sansBillet = absences.filter((a) => !a.billet).length;
+        return { student, total: absences.length, sansBillet };
+      }).filter((row) => row.total > 0);
+
+      if (!rows.length) {
+        openModal("Top absences", `<div class="notice">Aucune absence trouvée avec ces filtres.</div>`);
+        return;
+      }
+
+      const byFiliere = {};
+      rows.forEach((row) => {
+        const filiere = row.student.filiere || "Sans filière";
+        byFiliere[filiere] ||= [];
+        byFiliere[filiere].push(row);
+      });
+
+      const html = Object.entries(byFiliere).sort(([a], [b]) => a.localeCompare(b)).map(([filiere, items]) => {
+        const body = items
+          .sort((a, b) => b.total - a.total || b.sansBillet - a.sansBillet || `${a.student.nom} ${a.student.prenom}`.localeCompare(`${b.student.nom} ${b.student.prenom}`))
+          .slice(0, 10)
+          .map((item, index) => `
+            <tr>
+              <td>${index + 1}</td>
+              <td>${escapeHtml(item.student.code)}</td>
+              <td>${escapeHtml(item.student.nom)} ${escapeHtml(item.student.prenom)}</td>
+              <td>${escapeHtml(item.student.groupe)}</td>
+              <td><span class="badge red">${item.total}</span></td>
+              <td><span class="badge ${item.sansBillet ? "red" : "green"}">${item.sansBillet}</span></td>
+            </tr>
+          `).join("");
+        return `
+          <h3 style="margin-top:16px">${escapeHtml(filiere)}</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Code</th><th>Stagiaire</th><th>Groupe</th><th>Absences</th><th>Sans billet</th></tr></thead>
+              <tbody>${body}</tbody>
+            </table>
+          </div>
+        `;
+      }).join("");
+
+      openModal("Top stagiaires par absences", html);
+    }
+
+    function openStatistics() {
+      const students = filteredStudents("filter");
+      if (!students.length) {
+        openModal("Statistiques", `<div class="notice">Aucun stagiaire trouvé avec ces filtres.</div>`);
+        return;
+      }
+
+      const filiereStats = {};
+      const individualRows = students.map((student) => {
+        const records = studentAbsences(student.id);
+        const absences = records.filter((a) => (a.category || "absence") === "absence").length;
+        const retards = records.filter((a) => a.category === "retard").length;
+        const sansBillet = records.filter((a) => !a.billet).length;
+        const key = `${student.filiere || "Sans filière"}||${student.groupe || "Sans groupe"}`;
+        filiereStats[key] ||= { filiere: student.filiere || "Sans filière", groupe: student.groupe || "Sans groupe", stagiaires: 0, absences: 0, retards: 0, sansBillet: 0 };
+        filiereStats[key].stagiaires += 1;
+        filiereStats[key].absences += absences;
+        filiereStats[key].retards += retards;
+        filiereStats[key].sansBillet += sansBillet;
+        return { student, absences, retards, sansBillet };
+      }).sort((a, b) => b.absences - a.absences || b.retards - a.retards || `${a.student.nom} ${a.student.prenom}`.localeCompare(`${b.student.nom} ${b.student.prenom}`));
+
+      const summaryRows = Object.values(filiereStats).sort((a, b) => `${a.filiere} ${a.groupe}`.localeCompare(`${b.filiere} ${b.groupe}`)).map((item) => `
+        <tr>
+          <td>${escapeHtml(item.filiere)}</td>
+          <td>${escapeHtml(item.groupe)}</td>
+          <td>${item.stagiaires}</td>
+          <td><span class="badge red">${item.absences}</span></td>
+          <td><span class="badge amber">${item.retards}</span></td>
+          <td><span class="badge ${item.sansBillet ? "red" : "green"}">${item.sansBillet}</span></td>
+        </tr>
+      `).join("");
+
+      const individualHtml = individualRows.map((item) => `
+        <tr>
+          <td>${escapeHtml(item.student.code)}</td>
+          <td>${escapeHtml(item.student.nom)} ${escapeHtml(item.student.prenom)}</td>
+          <td>${escapeHtml(item.student.filiere)}</td>
+          <td>${escapeHtml(item.student.groupe)}</td>
+          <td><span class="badge red">${item.absences}</span></td>
+          <td><span class="badge amber">${item.retards}</span></td>
+          <td><span class="badge ${item.sansBillet ? "red" : "green"}">${item.sansBillet}</span></td>
+        </tr>
+      `).join("");
+
+      openModal("Statistiques", `
+        <h3>Statistique par filière et groupe</h3>
+        <div class="table-wrap" style="margin-top:8px">
+          <table>
+            <thead><tr><th>Filière</th><th>Groupe</th><th>Stagiaires</th><th>Absences</th><th>Retards</th><th>Sans billet</th></tr></thead>
+            <tbody>${summaryRows}</tbody>
+          </table>
+        </div>
+        <h3 style="margin-top:16px">Statistique individuelle</h3>
+        <div class="table-wrap" style="margin-top:8px">
+          <table>
+            <thead><tr><th>Code</th><th>Stagiaire</th><th>Filière</th><th>Groupe</th><th>Absences</th><th>Retards</th><th>Sans billet</th></tr></thead>
+            <tbody>${individualHtml}</tbody>
+          </table>
+        </div>
+      `);
+    }
+
+    function exportData() {
+      const blob = new Blob([JSON.stringify(db, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "ista-nador-donnees.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    el("roleTabs").querySelectorAll("button").forEach((button) => button.addEventListener("click", () => setRole(button.dataset.role)));
+    el("loginBtn").addEventListener("click", login);
+    el("loginPassword").addEventListener("keydown", (event) => { if (event.key === "Enter") login(); });
+    el("logoutBtn").addEventListener("click", logout);
+    el("changePasswordBtn").addEventListener("click", openPasswordModal);
+    el("modalCloseBtn").addEventListener("click", closeModal);
+    el("filterFiliere").addEventListener("change", () => { fillSelect(el("filterGroupe"), getGroupes(el("filterFiliere").value)); renderMainTable(); });
+    el("filterGroupe").addEventListener("change", renderMainTable);
+    el("searchInput").addEventListener("input", renderMainTable);
+    el("resetFiltersBtn").addEventListener("click", () => { el("searchInput").value = ""; el("filterFiliere").value = ""; el("filterGroupe").value = ""; renderApp(); });
+    el("markFiliere").addEventListener("change", () => {
+      const markStudents = session && session.role === "formateur" ? db.students.filter(canTeacherSeeStudent) : db.students;
+      fillSelect(el("markGroupe"), getGroupes(el("markFiliere").value, markStudents), "Choisir");
+      renderMarkTable();
+    });
+    el("markGroupe").addEventListener("change", renderMarkTable);
+    el("markSearch").addEventListener("input", renderMarkTable);
+    el("saveAbsencesBtn").addEventListener("click", saveAbsences);
+    el("selectAllVisibleBtn").addEventListener("click", () => { filteredStudents("mark").forEach((s) => checkedAbsences.add(s.id)); renderMarkTable(); });
+    el("clearSelectionBtn").addEventListener("click", () => { checkedAbsences.clear(); renderMarkTable(); });
+    el("exportPdfBtn").addEventListener("click", exportAbsencesPdf);
+    el("importBtn").addEventListener("click", importStudents);
+    el("addStudentBtn").addEventListener("click", addStudent);
+    el("addTeacherBtn").addEventListener("click", addTeacher);
+    el("addSupervisorBtn").addEventListener("click", addSupervisor);
+    el("exportBtn").addEventListener("click", () => exportAbsencesPdf("filter"));
+    el("importTabShortcut").addEventListener("click", () => { activeTab = "students"; renderApp(); });
+    el("addStudentShortcut").addEventListener("click", () => { activeTab = "students"; renderApp(); el("studentCode").focus(); });
+    el("supervisorPdfBtn").addEventListener("click", () => exportAbsencesPdf("filter"));
+    el("printDetailsBtn").addEventListener("click", () => printableStudentDetails([...selectedBilletStudents]));
+    el("statsBtn").addEventListener("click", openStatistics);
+    el("topAbsencesBtn").addEventListener("click", openTopAbsences);
+    el("bulkAbsenceBilletBtn").addEventListener("click", () => openBilletMultiple("absence", [...selectedBilletStudents]));
+    el("bulkRetardBilletBtn").addEventListener("click", () => openBilletMultiple("retard", [...selectedBilletStudents]));
+    el("clearStudentsBtn").addEventListener("click", () => {
+      if (!confirm("Supprimer tous les stagiaires et toutes les absences ?")) return;
+      db.students = [];
+      db.absences = [];
+      saveDb();
+      renderApp();
+    });
+
+    el("absenceDate").value = today;
+    setRole("surveillant");
+  </script>
+</body>
+</html>

@@ -12,13 +12,13 @@ class Absence extends Model
         'session_id',
         'marked_by',
         'marked_at',
-        'justified',
+        'category',
+        'billet_id',
         'justification_note',
     ];
 
     protected $casts = [
         'marked_at' => 'datetime',
-        'justified' => 'boolean',
     ];
 
     public function student(): BelongsTo
@@ -34,5 +34,10 @@ class Absence extends Model
     public function markedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'marked_by');
+    }
+
+    public function billet(): BelongsTo
+    {
+        return $this->belongsTo(Billet::class);
     }
 }

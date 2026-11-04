@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Student extends Model
 {
-    protected $fillable = ['full_name', 'student_number', 'birth_date'];
+    protected $fillable = ['full_name', 'full_name_ar', 'student_number', 'birth_date', 'birth_place', 'cin', 'phone'];
 
     protected $casts = [
         'birth_date' => 'date',

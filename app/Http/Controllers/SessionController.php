@@ -12,12 +12,56 @@ use Inertia\Inertia;
 
 class SessionController extends Controller
 {
-    public function create(Group $group)
+    public function index(Request $request)
     {
-        $professors = User::role('professor')->get(['id', 'name', 'email']);
+        $user = $request->user();
+        if (!$user->hasRole('formateur') && !$user->hasRole('admin')) {
+            abort(403);
+        }
+
+        $sessionsQuery = Session::with('group.academicYear')
+            ->withCount('absences');
+
+        if ($user->hasRole('formateur')) {
+            $sessionsQuery->where('professor_id', $user->id);
+        }
+
+        $sessions = $sessionsQuery->orderByDesc('date')->orderByDesc('start_time')->get();
+
+        return Inertia::render('Sessions/Index', [
+            'sessions' => $sessions,
+        ]);
+    }
+
+    public function create(Request $request)
+    {
+        $groupId = $request->query('group_id');
+        $group = null;
+        $groups = [];
+        $professors = [];
+
+        if ($groupId) {
+            $group = Group::findOrFail($groupId);
+            if (request()->user()->hasRole('formateur') && !$group->formateurs()->where('users.id', request()->user()->id)->exists()) {
+                abort(403, 'Vous n\'êtes pas affecté à ce groupe.');
+            }
+            $professors = $group->formateurs()->get(['users.id', 'name', 'email']);
+            $group->load('academicYear');
+        } else {
+            // Need to select a group
+            $user = request()->user();
+            if ($user->hasRole('admin')) {
+                $groups = Group::with('academicYear')->get();
+                $professors = User::role('formateur')->get(['users.id', 'name', 'email']);
+            } else {
+                $groups = $user->groups()->with('academicYear')->get();
+                $professors = [['id' => $user->id, 'name' => $user->name, 'email' => $user->email]];
+            }
+        }
 
         return Inertia::render('Sessions/Create', [
-            'group' => $group->load('academicYear'),
+            'group' => $group,
+            'groups' => $groups,
             'professors' => $professors,
         ]);
     }
@@ -36,7 +80,7 @@ class SessionController extends Controller
         $session = Session::create($validated);
 
         return redirect()->route('sessions.show', $session)
-            ->with('success', 'Session created successfully.');
+            ->with('success', 'Séance créée avec succès.');
     }
 
     public function show(Session $session)
