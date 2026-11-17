@@ -68,6 +68,18 @@ class SessionController extends Controller
 
     public function store(Request $request)
     {
+        $user = $request->user();
+        if (!$user->hasRole('admin') && !$user->hasRole('formateur')) {
+            abort(403);
+        }
+
+        if ($request->filled('group_id') && !$user->hasRole('admin')) {
+            $group = Group::find($request->input('group_id'));
+            if ($group && !$user->groups()->where('groups.id', $group->id)->exists()) {
+                abort(403);
+            }
+        }
+
         $validated = $request->validate([
             'group_id' => 'required|exists:groups,id',
             'subject' => 'required|string|max:255',
@@ -76,6 +88,9 @@ class SessionController extends Controller
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
         ]);
+
+        $group = Group::findOrFail($validated['group_id']);
+        Gate::authorize('create', [Session::class, $group]);
 
         $session = Session::create($validated);
 

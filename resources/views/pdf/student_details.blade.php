@@ -56,7 +56,7 @@
         @php
             $absences = $student->absences->where('category', 'Absence');
             $retards = $student->absences->where('category', 'Retard');
-            $sansBillet = $student->absences->where('billet', false);
+            $sansBillet = $student->absences->whereNull('billet_id');
         @endphp
 
         <div class="stats-container">
@@ -95,7 +95,7 @@
                         <td>{{ $absence->category }}</td>
                         <td>{{ optional($absence->session)->subject ?? '—' }}</td>
                         <td>{{ optional(optional($absence->session)->professor)->name ?? '—' }}</td>
-                        <td>{{ optional($absence->marker)->name ?? '—' }}</td>
+                        <td>{{ optional($absence->markedBy)->name ?? '—' }}</td>
                         <td>
                             @if($absence->billet)
                                 <span class="status-badge status-resolved">Régularisé</span>
@@ -103,7 +103,7 @@
                                 <span class="status-badge status-unresolved">Sans Billet</span>
                             @endif
                         </td>
-                        <td>{{ optional($absence->billetIssuer)->name ?? '—' }}</td>
+                        <td>{{ optional(optional($absence->billet)->issuedBy)->name ?? '—' }}</td>
                         <td>{{ $absence->justification_note ?? '—' }}</td>
                     </tr>
                 @empty

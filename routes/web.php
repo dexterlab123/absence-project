@@ -38,7 +38,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Attendance
     Route::post('/sessions/{session}/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
-    Route::patch('/absences/{absence}', [AttendanceController::class, 'update'])->name('absences.update');
+
     Route::patch('/absences/{absence}/billet', [AbsenceController::class, 'issueBillet'])->name('absences.issueBillet');
     Route::post('/absences/billets', [AbsenceController::class, 'issueBilletBulk'])->name('absences.issueBilletBulk');
 

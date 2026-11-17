@@ -17,12 +17,17 @@ class RolesAndUsersSeeder extends Seeder
         $formateurRole = Role::firstOrCreate(['name' => 'formateur']);
         $surveillantRole = Role::firstOrCreate(['name' => 'surveillant']);
 
+        // Demo passwords
+        $adminPassword = $this->getDemoPassword('DEMO_ADMIN_PASSWORD', 'admin');
+        $formateurPassword = $this->getDemoPassword('DEMO_FORMATEUR_PASSWORD', 'formateur');
+        $surveillantPassword = $this->getDemoPassword('DEMO_SURVEILLANT_PASSWORD', 'surveillant');
+
         // Create admin user (uses email for login)
         $admin = User::firstOrCreate(
             ['email' => 'admin@ista-nador.ma'],
             [
                 'name' => 'Admin ISTA',
-                'password' => bcrypt('password'),
+                'password' => bcrypt($adminPassword),
                 'email_verified_at' => now(),
             ]
         );
@@ -34,7 +39,7 @@ class RolesAndUsersSeeder extends Seeder
             [
                 'name' => 'Mohammed Formateur',
                 'email' => 'formateur@ista-nador.ma',
-                'password' => bcrypt('password'),
+                'password' => bcrypt($formateurPassword),
                 'email_verified_at' => now(),
             ]
         );
@@ -46,7 +51,7 @@ class RolesAndUsersSeeder extends Seeder
             [
                 'name' => 'Ahmed Surveillant',
                 'email' => 'surveillant@ista-nador.ma',
-                'password' => bcrypt('password'),
+                'password' => bcrypt($surveillantPassword),
                 'email_verified_at' => now(),
             ]
         );
@@ -68,5 +73,20 @@ class RolesAndUsersSeeder extends Seeder
 
         // Assign sample formateur to a group so they aren't locked out
         $formateur->groups()->syncWithoutDetaching([$group1->id]);
+    }
+
+    protected function getDemoPassword(string $envKey, string $role): string
+    {
+        $password = env($envKey) ?: env('DEMO_PASSWORD');
+
+        if (!empty($password)) {
+            return $password;
+        }
+
+        if (app()->environment('local')) {
+            return 'password';
+        }
+
+        throw new \RuntimeException("Demo account password for {$role} must be defined in {$envKey} or DEMO_PASSWORD when APP_ENV is not local.");
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Student;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class StudentController extends Controller
@@ -35,6 +36,8 @@ class StudentController extends Controller
 
     public function importAll(\Illuminate\Http\Request $request)
     {
+        Gate::authorize('importAll', Student::class);
+
         $request->validate([
             'file' => 'required|file|max:20480', // Allow up to 20MB for large roster files
         ]);

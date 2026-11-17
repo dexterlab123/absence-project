@@ -49,8 +49,7 @@ class ExportController extends Controller
             }
             if ($search) {
                 $studentsQuery->where(function($q) use ($search) {
-                    $q->where('first_name', 'like', "%{$search}%")
-                      ->orWhere('last_name', 'like', "%{$search}%")
+                    $q->where('full_name', 'like', "%{$search}%")
                       ->orWhere('student_number', 'like', "%{$search}%");
                 });
             }

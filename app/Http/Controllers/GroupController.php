@@ -8,6 +8,7 @@ use App\Models\Group;
 use App\Models\Student;
 use App\Imports\StudentsImport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -37,6 +38,8 @@ class GroupController extends Controller
 
     public function store(Request $request)
     {
+        Gate::authorize('create', Group::class);
+
         $currentYear = AcademicYear::current()->first();
         if (!$currentYear) {
             return back()->withErrors(['error' => 'Aucune année scolaire en cours.']);
@@ -76,6 +79,8 @@ class GroupController extends Controller
 
     public function addStudent(Request $request, Group $group)
     {
+        Gate::authorize('manageStudents', $group);
+
         $validated = $request->validate([
             'full_name' => 'required|string|max:255',
             'full_name_ar' => 'nullable|string|max:255',
@@ -124,6 +129,8 @@ class GroupController extends Controller
 
     public function import(Request $request, Group $group)
     {
+        Gate::authorize('manageStudents', $group);
+
         $request->validate([
             'file' => 'required|file|max:10240',
         ]);
